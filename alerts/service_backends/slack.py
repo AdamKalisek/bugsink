@@ -118,6 +118,7 @@ def slack_backend_send_test_message(webhook_url, project_name, display_name, ser
                 }
             ]}
 
+    fallback_data = {"text": "Test message by Bugsink to test the webhook setup."}
     try:
         result = requests.post(
             webhook_url,
@@ -127,10 +128,22 @@ def slack_backend_send_test_message(webhook_url, project_name, display_name, ser
         )
 
         result.raise_for_status()
-
         _store_success_info(service_config_id)
     except requests.RequestException as e:
         response = getattr(e, 'response', None)
+        if response is not None and getattr(response, 'status_code', 0) in (400, 415):
+            try:
+                fb_res = requests.post(
+                    webhook_url,
+                    data=json.dumps(fallback_data),
+                    headers={"Content-Type": "application/json"},
+                    timeout=5,
+                )
+                fb_res.raise_for_status()
+                _store_success_info(service_config_id)
+                return
+            except Exception as fb_e:
+                pass
         _store_failure_info(service_config_id, e, response)
 
     except Exception as e:
@@ -198,6 +211,8 @@ def slack_backend_send_alert(
                 },
             ]}
 
+    fallback_text = f"{alert_reason} issue: {truncatechars(issue.title().replace('|', ''), 200)}\n{issue_url}"
+    fallback_data = {"text": fallback_text}
     try:
         result = requests.post(
             webhook_url,
@@ -207,10 +222,22 @@ def slack_backend_send_alert(
         )
 
         result.raise_for_status()
-
         _store_success_info(service_config_id)
     except requests.RequestException as e:
         response = getattr(e, 'response', None)
+        if response is not None and getattr(response, 'status_code', 0) in (400, 415):
+            try:
+                fb_res = requests.post(
+                    webhook_url,
+                    data=json.dumps(fallback_data),
+                    headers={"Content-Type": "application/json"},
+                    timeout=5,
+                )
+                fb_res.raise_for_status()
+                _store_success_info(service_config_id)
+                return
+            except Exception as fb_e:
+                pass
         _store_failure_info(service_config_id, e, response)
 
     except Exception as e:

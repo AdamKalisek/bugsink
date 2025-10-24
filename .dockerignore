@@ -1,0 +1,27 @@
+# Reduce Docker build context; keep dist/ for Dockerfile.fromwheel builds.
+# NOTE: Do NOT exclude .git — Dockerfile uses setuptools_scm which needs git metadata.
+.gitignore
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.DS_Store
+.mypy_cache/
+.pytest_cache/
+.tox/
+.coverage
+coverage.xml
+htmlcov/
+.venv/
+venv/
+.env
+.env.*
+.vscode/
+.idea/
+node_modules/
+*.log
+*.sqlite3
+*.db
+*.swp
+*.swo

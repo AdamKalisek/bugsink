@@ -176,6 +176,13 @@ BUGSINK = {
         os.getenv("MINIMIZE_INFORMATION_EXPOSURE", "false").lower() in ("true", "1", "yes"),
 
     "PHONEHOME": os.getenv("PHONEHOME", "true").lower() in ("true", "1", "yes"),
+
+    # Optional global Slack (or compatible) webhook. If set, all project alerts
+    # are also sent to this webhook in addition to any per-project configs.
+    "GLOBAL_SLACK_WEBHOOK_URL": os.getenv("ALERTS_GLOBAL_SLACK_WEBHOOK_URL"),
+
+    # Select message backend for the global webhook: "slack" (default) or "mattermost".
+    "GLOBAL_MESSAGE_BACKEND": os.getenv("ALERTS_GLOBAL_MESSAGE_BACKEND", "mattermost").lower(),
 }
 
 

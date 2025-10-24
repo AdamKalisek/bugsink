@@ -33,3 +33,43 @@ Now, you can [set up your first project](https://www.bugsink.com/docs/quickstart
 [Detailed installation instructions](https://www.bugsink.com/docs/installation/) are on the Bugsink website.
 
 [More information and documentation](https://www.bugsink.com/)
+
+## Build Your Own Docker Image
+
+You can build and run your own image (keeping the same env interface):
+
+Build from source (simple):
+
+```
+docker build -t yourorg/bugsink:latest .
+```
+
+Run it (same env vars as the public image):
+
+```
+docker run \
+  -e SECRET_KEY=PUT_AN_ACTUAL_RANDOM_SECRET_HERE_OF_AT_LEAST_50_CHARS \
+  -e CREATE_SUPERUSER=admin:admin \
+  -e PORT=8000 \
+  -e ALERTS_GLOBAL_SLACK_WEBHOOK_URL=https://chat.apertia.ai/hooks/your-webhook \
+  -e ALERTS_GLOBAL_MESSAGE_BACKEND=mattermost \
+  -p 8000:8000 \
+  yourorg/bugsink:latest
+```
+
+Alternatively, build from the wheel for parity with published images:
+
+```
+python -m pip install build
+python -m build --wheel
+docker build -f Dockerfile.fromwheel \
+  --build-arg WHEEL_FILE=$(ls dist/*.whl | tail -n1 | xargs -n1 basename) \
+  -t yourorg/bugsink:latest .
+```
+
+Notes:
+- `SECRET_KEY` must be truly random and at least 50 chars.
+- Optionally set `DATABASE_URL` (postgres/mysql) or mount a volume to `/data` for sqlite (default).
+- Set `BASE_URL` and `ALLOWED_HOSTS` appropriately when deploying behind a proxy.
+- `ALERTS_GLOBAL_SLACK_WEBHOOK_URL` (optional) sends all project alerts to a single Slack/Mattermost-compatible webhook in addition to per-project configs.
+- `ALERTS_GLOBAL_MESSAGE_BACKEND` can be `mattermost` (default) or `slack` to control formatting for the global webhook.

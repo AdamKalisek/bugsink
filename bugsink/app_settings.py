@@ -73,6 +73,13 @@ DEFAULTS = {
     # Security:
     "MINIMIZE_INFORMATION_EXPOSURE": False,
     "PHONEHOME": True,
+
+    # Alerts: optional global Slack (or compatible) webhook. When set, alerts are also sent here
+    # for all projects, in addition to any per-project messaging service configs.
+    "GLOBAL_SLACK_WEBHOOK_URL": None,
+
+    # Which backend to use for the global webhook. Choices: "slack" (default), "mattermost".
+    "GLOBAL_MESSAGE_BACKEND": "mattermost",
 }
 
 

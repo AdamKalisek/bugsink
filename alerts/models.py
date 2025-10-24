@@ -9,7 +9,14 @@ class MessagingServiceConfig(models.Model):
     display_name = models.CharField(max_length=100, blank=False,
                                     help_text='For display in the UI, e.g. "#general on company Slack"')
 
-    kind = models.CharField(choices=[("slack", "Slack (or compatible)"), ], max_length=20, default="slack")
+    kind = models.CharField(
+        choices=[
+            ("slack", "Slack (or compatible)"),
+            ("mattermost", "Mattermost"),
+        ],
+        max_length=20,
+        default="slack",
+    )
 
     config = models.TextField(blank=False)
 
@@ -28,7 +35,10 @@ class MessagingServiceConfig(models.Model):
                                                   help_text="Error message from the exception")
 
     def get_backend(self):
-        # once we have multiple backends: lookup by kind.
+        # Lookup by kind; fallback to Slack for unknown kinds
+        if self.kind == "mattermost":
+            from .service_backends.mattermost import MattermostBackend
+            return MattermostBackend(self)
         return SlackBackend(self)
 
     def clear_failure_status(self):

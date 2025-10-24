@@ -78,6 +78,28 @@ def _send_alert(issue_id, state_description, alert_article, alert_reason, **kwar
         service_backend = service.get_backend()
         service_backend.send_alert(issue_id, state_description, alert_article, alert_reason, **kwargs)
 
+    # Optional global Slack webhook (applies to all projects). If configured via
+    # BUGSINK["GLOBAL_SLACK_WEBHOOK_URL"], send an additional alert there.
+    try:
+        global_webhook = get_settings().GLOBAL_SLACK_WEBHOOK_URL
+    except AttributeError:
+        global_webhook = None
+
+    # For backward-compat, if GLOBAL_SLACK_WEBHOOK_URL is set, default to Slack.
+    # Prefer new GLOBAL_MESSAGE_BACKEND when present.
+    try:
+        backend_choice = getattr(get_settings(), "GLOBAL_MESSAGE_BACKEND", "mattermost")
+    except AttributeError:
+        backend_choice = "mattermost"
+
+    if global_webhook:
+        if backend_choice == "mattermost":
+            from alerts.service_backends.mattermost import mattermost_send_alert as _mm_task
+            _mm_task.delay(global_webhook, issue_id, state_description, alert_article, alert_reason, None, **kwargs)
+        else:
+            from alerts.service_backends.slack import slack_backend_send_alert as _slack_task
+            _slack_task.delay(global_webhook, issue_id, state_description, alert_article, alert_reason, None, **kwargs)
+
     for user in _get_users_for_email_alert(issue):
         send_rendered_email(
             subject=f'"{truncatechars(issue.title(), 80)}" in "{issue.project.name}" ({state_description})',

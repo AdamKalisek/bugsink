@@ -30,6 +30,10 @@ services:
       DATABASE_URL: postgresql://bugsinkuser:your_super_secret_password@db:5432/bugsink # Change password to match POSTGRES_PASSWORD above
       BEHIND_HTTPS_PROXY: "false"  # Change this for setups behind a proxy w/ ssl enabled
       BASE_URL: "http://localhost:8000"
+      # Optional: send all project alerts to this Slack/Mattermost-compatible webhook:
+      ALERTS_GLOBAL_SLACK_WEBHOOK_URL: "https://chat.example.com/hooks/your-webhook"
+      # Optional: choose formatting for the global webhook: slack (default) or mattermost
+      ALERTS_GLOBAL_MESSAGE_BACKEND: "mattermost"
     healthcheck:
       test: ["CMD-SHELL", "python -c 'import requests; requests.get(\"http://localhost:8000/\").raise_for_status()'"]
       interval: 5s
